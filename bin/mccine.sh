@@ -8,8 +8,8 @@
 #########################################################################################
 #
 # Author: Thomas Fischer
-# License:CC BY-ND 3.0 ( http://creativecommons.org/licenses/by-nd/3.0 )
-VERSION=2014-07-15
+# License: CC BY-SA 4.0 ( http://creativecommons.org/licenses/by-sa/4.0/legalcode )
+VERSION=2016-03-17
 #
 #############################################################################
 
@@ -26,22 +26,22 @@ DEFSCABITS=8192      # Strength of enryption key (in bits) for the SUB-CA
 DEFSCERTBITS=4096    # Strength of enryption key (in bits) for the certificate private key
 
 # main config file for openssl
-OPENSSLCACONF=../etc/openssl_CA.cnf
-OPENSSLSCACONF=../etc/openssl_SUBCA.cnf
-OPENSSLMAILCONF=../etc/openssl_MAIL.cnf
-OPENSSLCONF=../etc/openssl_CAmulti.cnf
+OPENSSLCACONF=$PWD/etc/openssl_CA.cnf
+OPENSSLSCACONF=$PWD/etc/openssl_SUBCA.cnf
+OPENSSLMAILCONF=$PWD/etc/openssl_MAIL.cnf
+OPENSSLCONF=$PWD/etc/openssl_CAmulti.cnf
 
 # cert folders - ensure that they are matching OPENSSLCONF!
-CADIR=../CA
+CADIR=$PWD/CA
 ROOTCADIR=${CADIR}/root
 SUBCADIR=${CADIR}/sub
-NEWCRTDIR=../certs/
-INDEX=../share/index.txt
-SERIAL=../share/serial
+NEWCRTDIR=$PWD/certs/
+INDEX=$PWD/share/index.txt
+SERIAL=$PWD/share/serial
 
 
 # logfile
-LOG=../log/mccine.log
+LOG=$PWD/log/mccine.log
 
 
 # NO USER VARIABLES BEHIND THIS LINE - HERE STARTS THE CODE ;o)

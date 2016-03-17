@@ -6,6 +6,13 @@
 #
 ########################################################################
 
+v3.2 (2016-03-17)
+--------------------------
+fix: mccine could not being started when one was not in bin path
+fix: default hash is now SHA256
+new: you can create a csr without signing it now
+     Check "mccine.sh -h csr" to find out more
+
 
 v3.1 (2014-07-15)
 --------------------------
