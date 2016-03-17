@@ -7,11 +7,14 @@
 #
 #########################################################################################
 #
-# Author: Thomas Fischer
+# Author: Thomas Fischer <mail@se-di.de>
 # License: CC BY-SA 4.0 ( http://creativecommons.org/licenses/by-sa/4.0/legalcode )
 VERSION=2016-03-17
 #
 #############################################################################
+
+# cert req defaults 
+DEFSIGNENC="sha256" # the SHA signature hash to be used. Do NOT use sha1 for public certs!
 
 # root ca defaults
 DEFCADAYS=4380		# default duration for the CA cert in days (4380 means 12 years)
@@ -93,7 +96,7 @@ F_HELP_(){
     echo "  Usage:"
     echo "    $> $0 -m [MODE] [options]"
     echo 
-    echo "  MODE = usage mode. can be one of: <ROOTCA> | <SUBCA> | <sign>"
+    echo "  MODE = usage mode. can be one of: <ROOTCA> | <SUBCA> | <sign> | <csr>"
     echo 
     echo "  -h ROOTCA"
     echo "            <ROOTCA> will create a ROOT-CA and you need to start here when using mccine the first time."
@@ -101,6 +104,9 @@ F_HELP_(){
     echo "            <SUBCA> requires a ROOT-CA! If you have one already choose this to create a signing SUB-CA."
     echo "  -h sign"
     echo "            <sign> requires a ROOT- or SUB-CA! This helps you in self-signing a user cert."
+    echo "  -h csr"
+    echo "            <csr> requires a FQDN/IP only. No self-signing here. Use this mode if you want to sign"
+    echo "            your csr by another CA."
     echo "  -h full"
     echo "            will show all help output of the above."
     echo
@@ -211,9 +217,46 @@ F_HELP_SIGN(){
 	echo
 }
 
+# help info for creating cert requests
+F_HELP_CSR(){
+    echo
+    echo "    MODE = <csr>"
+	echo
+    echo "    -m csr|req"
+    echo        
+	echo "         The csr mode will be used to create a new certificate request only!"
+    echo "         It will NOT sign anything so you need to sign it manually or by another CA."
+	echo
+    echo "        (Order of args is totally free and case insensitive)"
+    echo
+	echo "         Required:"
+	echo "            -f|F MAIN-FQDN,CNx,IP1,IPx,... = One ore multiple common name(s) AND/OR IPs of the server certificate,"
+    echo "                                             normally that will be the DNS name(s)/IP(s) of your target server."
+	echo
+	echo "         Optional:"
+	echo "            -p|P CERT PEM file = The private key file of the existing/new server cert (will be created if not existing)"
+	echo "            -d|D DAYS-FOR-SIGNING = How long should the cert be valid in days."
+	echo "            -b|B CERT KEY-STRENGTH = Defines the strength of the private key"
+    echo "            -s   mail|MAIL = you can define 'MAIL' as special signing mode and then create a S/MIME certificate request"
+	echo
+	echo "         Defaults:"
+	echo "            CERT PEM file = <CN defined by -F arg>.pem"
+	echo "            DAYS-FOR-SIGNING = $DEFCERTDAYS days"
+	echo "            CERT KEY-STRENGTH = $DEFCERTBITS bit"
+	echo
+	echo
+	echo "	       Examples:"	
+    echo "             $> $0 -m csr -F my.ssl-server.de,myhostname,1.1.1.1 -d 365 -b 2048"
+	echo "             $> $0 -m csr -s MAIL -F support@se-di.de,info@se-di.de,info@sicherevielfalt.de"
+    echo "             $> $0 -m csr -F my.ssl-server.de"    
+	echo
+	echo
+}
+
 #show all help info
 F_HELP_FULL(){
     F_HELP
+    F_HELP_CSR
     F_HELP_CA
     F_HELP_SUBCA
     F_HELP_SIGN
@@ -429,8 +472,8 @@ case "$MODE" in
 
             # replace default common name with the main one
             sed -i "s/MCCINECN/$MYCN/g" $OPENSSLSCACONF
-            sed -i "/\[alt_names\]/ a\
-DNS.1=$MYCN" $OPENSSLCONF
+#            sed -i "/\[alt_names\]/ a\
+#DNS.1=$MYCN" $OPENSSLCONF
             
             # set counters
             iCNT=1
@@ -523,6 +566,7 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
                 [ ! -f "$CAPEM" ]&& F_ECHOLOG "\nERROR: CAPEM file <$CAPEM> does not exist! Try again or run:\n    $> $0 -m CA -F your-new-root-CA\n  This will create a new ROOT-CA which then can be used in sign mode as '-c'.\n" && F_HELP_SIGN && exit 2
                 [ -z "$CDAYS" ]&& F_ECHOLOG "Using default amount of days for signing ($DEFCERTDAYS days)" && CDAYS=$DEFCERTDAYS
                 [ -z "$CACHAIN" ]&& CACHAIN="$CACERT"
+                [ -z "$SIGNENC" ]&& F_ECHOLOG "Using default sign encryption hash ($DEFSIGNENC)" && SIGNENC=$DEFSIGNENC
                 F_COMMONCHKS
             fi
 
@@ -550,8 +594,8 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
             # preparing the special openssl conf
             # replace default common name with the main one
             sed -i "s/MCCINECN/$MYCN/g" $OPENSSLCONF
-            sed -i "/\[alt_names\]/ a\
-${ALTOPT}.1=$MYCN" $OPENSSLCONF
+           # sed -i "/\[alt_names\]/ a\
+#${ALTOPT}.1=$MYCN" $OPENSSLCONF
             
             # set counters
             iCNT=1
@@ -594,7 +638,12 @@ ${ALTOPT}.${iCNT}=$ALTN" $OPENSSLCONF && ((iCNT ++))
             echo "##########################################################"
             echo "# Self-sign the request and create the wanted cert:"
             echo
-            openssl ca -extensions v3_req -keyfile ${CAPEM} -policy policy_anything -cert $CACERT -days $CDAYS -config $OPENSSLCONF -out ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.crt -infiles ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt
+	    # the sign process depends on the option choosen
+#	    if [ $ALTOPT == "DNS" ];then
+#		
+#	    else 
+            	openssl ca -extensions v3_req -keyfile ${CAPEM} -policy policy_anything -cert $CACERT -days $CDAYS -config $OPENSSLCONF -out ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.crt -infiles ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt
+#	    fi
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While signing cert request. ABORTED!" && exit 2
  
             echo "##########################################################"
@@ -629,6 +678,113 @@ ${ALTOPT}.${iCNT}=$ALTN" $OPENSSLCONF && ((iCNT ++))
             echo "  Certificate: ${MYCN}_${CDAYS}-days.crt"
             echo "  Cert+Chain: ${NEWCRTDIR}/${MYCN}_${CDAYS}-days_fullCAchain.crt"
             echo
+        ;;
+        req|csr) F_ECHOLOG "Running in >CSR only< mode." ; MODE=CSR
+            ###################################################################################
+            ###                                                                             ###
+            ### Certificate request only mode                                                       ###
+            ###                                                                             ###
+            ###################################################################################
+
+            # we do not want to modify the template openssl config so we duplicate it first
+            # and we do that depending on the signing mode
+            if [ ! -z "$SIGNMODE" ] && [ "$SIGNMODE" == "MAIL" ];then
+                cp $OPENSSLMAILCONF ${OPENSSLMAILCONF}.tmp
+                OPENSSLCONF="${OPENSSLMAILCONF}.tmp"
+                ALTOPT=email
+            else
+                cp $OPENSSLCONF ${OPENSSLCONF}.tmp
+                OPENSSLCONF="${OPENSSLCONF}.tmp"
+                ALTOPT=DNS
+            fi
+            OPENSSL_CONF=$OPENSSLCONF
+            export OPENSSL_CONF
+
+            echo "Using settings from >$OPENSSLCONF<" >> $LOG
+
+            # some checks and default options 
+            if [ -z "$MYCN" ];then
+                echo && F_ECHOLOG "ERROR: > -f|F is required in this mode!" && echo && F_HELP
+                exit 2
+            else
+                # some basic checks and defaults
+                [ -z "$BITS" ]&& BITS="${DEFCERTBITS}"
+                [ -z "$PKEY" ]&& PKEY="${NEWCRTDIR}/${MYCN}.pem"
+                [ -z "$CDAYS" ]&& F_ECHOLOG "Using default amount of days for signing ($DEFCERTDAYS days)" && CDAYS=$DEFCERTDAYS
+                [ -z "$SIGNENC" ]&& F_ECHOLOG "Using default sign encryption hash ($DEFSIGNENC)" && SIGNENC=$DEFSIGNENC
+                F_COMMONCHKS
+            fi
+
+            #preparing some openssl stuff
+            CNFCAF=${CAPEM##*/}
+            CNFCA=${CNFCAF%\.pem}
+            INDEX=${INDEX}_$CNFCA
+            SERIAL=${SERIAL}_$CNFCA
+            [ ! -f $INDEX ]&& >$INDEX
+            [ ! -f $SERIAL ]&& echo "01" >$SERIAL
+            # build the correct filenames for CA specific files
+            sed -i "s/MCCINECA/$CNFCA/g" $OPENSSLCONF
+
+            # starting the magic 
+            if [ ! -f "${PKEY}" ];then
+                echo "##########################################################"
+                echo "# Creating private key:"
+                echo
+                openssl genrsa -out ${PKEY} $BITS -config $OPENSSLCONF 2>&1 >>$LOG
+                [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While creating private key. ABORTED!" && exit 2
+            else
+                echo "skipping private key generation - using existing one instead."
+            fi
+
+            # preparing the special openssl conf
+            # replace default common name with the main one
+            sed -i "s/MCCINECN/$MYCN/g" $OPENSSLCONF
+          
+            # set counters
+            iCNT=1
+            dCNT=2
+
+            # add all the alternative names/ips
+            if [ "$ALTOPT" == "email" ];then
+                for ALTN in $(echo "$ALLCN" |tr "," " ");do
+                    F_MAILCHK "$ALTN"
+                    if [ $? -eq 0 ];then
+                        echo "<$ALTN> seems to be a valid Email address" >> $LOG
+                        sed -i "/\[alt_names\]/ a\
+${ALTOPT}.${iCNT}=$ALTN" $OPENSSLCONF && ((iCNT ++))
+                    else
+                        echo "<$ALTN> seems to be NOT a valid Email address" >> $LOG
+                        echo "ABORTED because of possible invalid Email <$ALTN>"
+                        exit 2
+                    fi
+                done
+            else
+                for ALTN in $(echo "$ALLCN" |tr "," " ");do
+                    F_IPCHK "$ALTN"
+                    if [ $? -eq 0 ];then
+                        echo "<$ALTN> seems to be a valid IP" >> $LOG
+                        sed -i "/\[alt_names\]/ a\
+    IP.${iCNT}=$ALTN" $OPENSSLCONF && ((iCNT ++))
+                    else
+                        echo "<$ALTN> seems to be NOT a valid IP therefore we treat it like DNS" >> $LOG
+                        sed -i "/\[alt_names\]/ a\
+    ${ALTOPT}.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
+                    fi
+                done
+            fi
+            echo "##########################################################"
+            echo "# Creating a request based on that private key:"
+            echo
+            openssl req -days $CDAYS -new -key ${PKEY} -out ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt -$SIGNENC -config $OPENSSLCONF 2>&1 >>$LOG
+            if [ $? -ne 0 ];then
+                F_ECHOLOG "ERROR: While creating cert request. ABORTED!" && exit 2
+            else
+                openssl req -text -in ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt
+                echo -e "\n\n"
+                echo -e "\tCongrats your certificate request is ready to deploy now!"
+                echo -e "\tPrivate Key: $PKEY (keep this protected on your PC)"
+                echo -e "\tCertificate request: ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt"
+            fi
         ;;
         *) F_ECHOLOG "Invalid operation mode: <$MODE>"
 	       F_HELP
