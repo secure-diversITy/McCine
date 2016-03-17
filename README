@@ -1,0 +1,20 @@
+########################################################################
+#
+# README file for mccine
+#
+# Last modified: 2014-07-14 by www.se-di.de
+#
+########################################################################
+
+To get up and running simply use:
+
+ ./bin/mccine.sh -h
+
+ There are other help modes available - you will see them there.
+
+
+KNOWN BEHAVIOUR
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The index and serial will be shared between all CA's and SUB-CA's
+- mccine will not create a CRL atm

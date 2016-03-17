@@ -1,0 +1,51 @@
+########################################################################
+#
+# Changelog for mccine
+#
+# Brought to you by www.se-di.de
+#
+########################################################################
+
+
+v3.1 (2014-07-15)
+--------------------------
+fix(!): Windows was not able to verify SUB-CA's created by mccine
+new: pkcs12 export of S/MIME enhanced:
+        - the option "-A" allows you to specify a cert containing the full CA-Chain in PEM format
+        - automatically includes the specified signing cert when not specifying a CA-Chain (option -A)
+new(!): now different serial and index DB's are beeing used - based on the CA which signes the req
+new: when creating a SUB-CA a full chain will be created automatically
+new: including the full cert chain to your user cert when in signing mode automatically
+fix: wrong help output
+
+
+v3.0 (2014-07-14)
+--------------------------
+new(!): added full sub-ca support (means creating one and signing with it)
+new: re-designed help output (splitted in modes)
+fix: default value of CA was not displayed in help
+fix: wrong debug output for detecting priv key
+new(!): added support for creating S/MIME certificates which can be used for Email encryption
+        this includes:
+        - 1 or multiple mail addresses are possible!
+        - basic(!) validation of given mail address(es)
+        - will result in a p12 file which can be easily imported/used in e.g. thunderbird,outlook etc.
+
+
+
+v2.0 (2014-06-05)
+--------------------------
+new(!): totally restructered directory trees and where the files are stored etc
+	this is a big change and therefore need some more testing atm.
+new: simple startup guide in help (-h)
+fix: some defaults within openssl configs 
+fix: missing arg in SIGN mode example output
+fix: when no serial file exist mccine failed to sign a new cert
+new: introduces a CHANGES and a README file bundled with mccine
+
+
+v0.1 - 1.9
+--------------------------
+
+sorry there were such a lot of changes I can't remember anymore.. :-/
+
