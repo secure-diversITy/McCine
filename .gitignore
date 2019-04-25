@@ -1,0 +1,11 @@
+backup/*
+CA/root/*
+CA/sub/*
+certs/*
+share/*
+*.p12
+*.crt
+*.req.*
+*.tmp
+*.log
+*.pem
