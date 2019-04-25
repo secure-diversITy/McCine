@@ -7,9 +7,9 @@
 #
 #########################################################################################
 #
-# Author: Thomas Fischer <mail@se-di.de>
-# License: CC BY-SA 4.0 ( http://creativecommons.org/licenses/by-sa/4.0/legalcode )
-VERSION=2016-03-17
+# Author: Thomas Fischer
+# License:CC BY-ND 3.0 ( http://creativecommons.org/licenses/by-nd/3.0 )
+VERSION=2019-04-25
 #
 #############################################################################
 
@@ -390,7 +390,8 @@ case "$MODE" in
             echo "##########################################################"
             echo "# Creating private key:"
             echo
-            openssl genrsa -out ${CAPEM} $BITS -config $OPENSSLCACONF 2>&1 >>$LOG
+            #openssl genrsa -out ${CAPEM} $BITS -config $OPENSSLCACONF 2>&1 >>$LOG
+            openssl genrsa -out ${CAPEM} $BITS 2>&1 >>$LOG
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While creating CA private key. ABORTED!" && exit 2
 
             echo "##########################################################"
@@ -462,7 +463,8 @@ case "$MODE" in
             echo "##########################################################"
             echo "# Creating private key:"
             echo
-            openssl genrsa -out ${CAPEM} $BITS -config $OPENSSLSCACONF 2>&1 >>$LOG
+            #openssl genrsa -out ${CAPEM} $BITS -config $OPENSSLSCACONF 2>&1 >>$LOG
+            openssl genrsa -out ${CAPEM} $BITS 2>&1 >>$LOG
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While creating SUBCA private key. ABORTED!" && exit 2
 
             # preparing the special openssl conf
@@ -542,7 +544,7 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
             # we do not want to modify the template openssl config so we duplicate it first
             # and we do that depending on the signing mode
             if [ ! -z "$SIGNMODE" ] && [ "$SIGNMODE" == "MAIL" ];then
-                cp $OPENSSLMAILCONF ${OPENSSLMAILCONF}.tmp
+                cp $OPENSSLMAILCONF ${OPENSSLMAILCONF}.tmp -v >> $LOG
                 OPENSSLCONF="${OPENSSLMAILCONF}.tmp"
                 ALTOPT=email
             else
@@ -585,7 +587,7 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
                 echo "##########################################################"
                 echo "# Creating private key:"
                 echo
-                openssl genrsa -out ${PKEY} $BITS -config $OPENSSLCONF 2>&1 >>$LOG
+                OPENSSL_CONF=$OPENSSLCONF openssl genrsa -out ${PKEY} $BITS 2>&1 >>$LOG
                 [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While creating private key. ABORTED!" && exit 2
             else
                 echo "skipping private key generation - using existing one instead."

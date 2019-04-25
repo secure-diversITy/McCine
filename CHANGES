@@ -2,9 +2,14 @@
 #
 # Changelog for mccine
 #
-# Brought to you by www.se-di.de
+# Brought to you by www.sedi.one
 #
 ########################################################################
+
+v3.3 (2019-04-25)
+--------------------------
+fix: openssl was not able to generate new keys anymore (subCA, rootCA)
+
 
 v3.2 (2016-03-17)
 --------------------------
