@@ -1,7 +1,7 @@
 #!/bin/bash
 #########################################################################################
 #
-# Generates a custom CA and self-sign certs with alternate names / multiple CNs.
+# Generates/Uses a custom CA and self-sign certs with alternate names / multiple CNs.
 #
 # "mccine": [m]ulti [c]ert [c]reator [i]s [n]ot [e]asy-rsa ;o)
 #
@@ -9,7 +9,7 @@
 #
 # Author: Thomas Fischer
 # License:CC BY-ND 3.0 ( http://creativecommons.org/licenses/by-nd/3.0 )
-VERSION=2019-04-25
+VERSION=2020-12-07
 #
 #############################################################################
 
@@ -202,6 +202,7 @@ F_HELP_SIGN(){
 	echo "            -d|D DAYS-FOR-SIGNING = How long should the cert be valid in days."
 	echo "            -b|B CERT KEY-STRENGTH = Defines the strength of the private key"
     echo "            -s   mail|MAIL = you can define 'MAIL' as special signing mode and then create a S/MIME certificate"
+        echo "            -A FULL-CA-CHAIN = Path to the full-chain CA file. Required when you are using a sub-CA only"
 	echo
 	echo "         Defaults:"
 	echo "            CERT PEM file = <CN defined by -F arg>.pem"
@@ -644,6 +645,7 @@ ${ALTOPT}.${iCNT}=$ALTN" $OPENSSLCONF && ((iCNT ++))
 #	    if [ $ALTOPT == "DNS" ];then
 #		
 #	    else 
+            	echo "openssl ca -extensions v3_req -keyfile ${CAPEM} -policy policy_anything -cert $CACERT -days $CDAYS -config $OPENSSLCONF -out ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.crt -infiles ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt"
             	openssl ca -extensions v3_req -keyfile ${CAPEM} -policy policy_anything -cert $CACERT -days $CDAYS -config $OPENSSLCONF -out ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.crt -infiles ${NEWCRTDIR}/${MYCN}_${CDAYS}-days.req.txt
 #	    fi
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While signing cert request. ABORTED!" && exit 2

@@ -11,7 +11,7 @@ tsa_policy3 = 1.2.3.4.5.7
 default_ca	= CA_default		# The default ca section
 
 [ CA_default ]
-dir		= ../			# Where everything is kept
+dir		= ./			# Where everything is kept
 share		= $dir/share/		# program data 
 certs		= $dir/certs		# Where the issued certs are kept
 crl_dir		= $dir/crl		# Where the issued crl are kept
@@ -66,9 +66,9 @@ countryName_default		= DE
 countryName_min			= 2
 countryName_max			= 2
 stateOrProvinceName		= State or Province Name (full name)
-stateOrProvinceName_default	= Bavaria
+stateOrProvinceName_default	= 
 localityName			= Locality Name (eg, city)
-localityName_default		= Munich
+localityName_default		= 
 0.organizationName		= Organization Name (eg, company)
 organizationalUnitName		= Organizational Unit Name (eg, section)
 commonName           		= Common Name (Your main Email Address)
