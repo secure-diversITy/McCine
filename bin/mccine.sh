@@ -469,12 +469,8 @@ case "$MODE" in
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While creating SUBCA private key. ABORTED!" && exit 2
 
             # preparing the special openssl conf
-
-            # build the correct filenames for CA specific files
-            sed -i "s/MCCINECA/$MYCN/g" $OPENSSLSCACONF
-
             # replace default common name with the main one
-            sed -i "s/MCCINECN/$MYCN/g" $OPENSSLSCACONF
+            sed -i "s/MCCINECN/$MYCN/g" $OPENSSLCONF
 #            sed -i "/\[alt_names\]/ a\
 #DNS.1=$MYCN" $OPENSSLCONF
             
@@ -496,7 +492,7 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
                 fi
             done
 
-         echo "##########################################################"
+            echo "##########################################################"
             echo "# Creating a request based on that private key:"
             echo
             openssl req -days $CDAYS -new -key ${CAPEM} -out ${SUBCADIR}/${MYCN}_${CDAYS}-days.req.txt -config $OPENSSLSCACONF 2>&1 >>$LOG
@@ -506,8 +502,8 @@ DNS.${dCNT}=$ALTN" $OPENSSLCONF && ((dCNT ++))
             echo "# Sign the request and create the wanted subca:"
             echo
             # no redirection to log so we can see the sign y/n question:
-            openssl x509 -extfile $OPENSSLSCACONF -extensions v3_ca -CA $CACERT -req -days $CDAYS -in ${SUBCADIR}/${MYCN}_${CDAYS}-days.req.txt -CAserial $SERIAL -CAkey ${RCAPEM} -out ${SUBCADIR}/${MYCN}_${CDAYS}-days.crt
-#            openssl ca -extensions v3_ca -keyfile ${RCAPEM} -policy policy_anything -cert $CACERT -days $CDAYS -config $OPENSSLSCACONF -out ${SUBCADIR}/${MYCN}_${CDAYS}-days.crt -infiles ${SUBCADIR}/${MYCN}_${CDAYS}-days.req.txt
+            #echo "openssl ca -config $OPENSSLCACONF -extensions v3_ca -days $CDAYS -in ${SUBCADIR}/${MYCN}_${CDAYS}-days.req.txt -out ${SUBCADIR}/${MYCN}_${CDAYS}-days.crt -cert $CACERT -keyfile ${RCAPEM}"
+            openssl ca -config $OPENSSLCACONF -extensions v3_ca -days $CDAYS -in ${SUBCADIR}/${MYCN}_${CDAYS}-days.req.txt -out ${SUBCADIR}/${MYCN}_${CDAYS}-days.crt -cert $CACERT -keyfile ${RCAPEM}
             [ $? -ne 0 ]&& F_ECHOLOG "ERROR: While signing cert request. ABORTED!" && exit 2
  
             echo "##########################################################"

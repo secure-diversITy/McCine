@@ -1,5 +1,6 @@
 HOME			= .
 RANDFILE		= $ENV::HOME/.rnd
+MCDIR		        = $ENV::PWD
 oid_section		= new_oids
 
 [ new_oids ]
@@ -11,16 +12,16 @@ tsa_policy3 = 1.2.3.4.5.7
 default_ca	= CA_default		# The default ca section
 
 [ CA_default ]
-dir		= ../			# Where everything is kept
+dir		= $MCDIR			# Where everything is kept
 share		= $dir/share		# program data 
 certs		= $dir/certs		# Where the issued certs are kept
 crl_dir		= $dir/crl		# Where the issued crl are kept
-database	= $share/index.txt_sign02.se-di.de	# database index file.
+database	= $share/index.txt_MCCINECN	# database index file.
 					# several ctificates with same subject.
 new_certs_dir	= $dir/newcerts		# default place for new certs.
 certificate	= $dir/cacert.pem 	# The CA certificate
-serial		= $share/serial_sign02.se-di.de		# The current serial number
-crlnumber	= $share/crlnumber_sign02.se-di.de	# the current crl number
+serial		= $share/serial_MCCINECN		# The current serial number
+crlnumber	= $share/crlnumber_MCCINECN	# the current crl number
 					# must be commented out to leave a V1 CRL
 crl		= $dir/crl.pem 		# The current CRL
 private_key	= $dir/private/cakey.pem# The private key
