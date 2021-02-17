@@ -9,7 +9,7 @@
 #
 # Author: Thomas Fischer
 # License:CC BY-ND 3.0 ( http://creativecommons.org/licenses/by-nd/3.0 )
-VERSION=2020-12-07
+VERSION=2021-02-17
 #
 #############################################################################
 
